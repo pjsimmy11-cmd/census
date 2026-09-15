@@ -34,3 +34,36 @@ ggplot(income_tx) +
   ) +
   theme_void()
 ```
+
+```{r}
+#| message: false
+#| cache: true
+edu_state <- get_acs(
+  geography = "state",
+  variables = c("B15003_001", "B15003_022", "B15003_023", "B15003_024", "B15003_025"),
+  year = 2020,
+  geometry = FALSE,
+  summary_var = "B15003_001"
+)
+```
+
+```{r}
+edu_state |>
+  group_by(GEOID, NAME) |>
+  summarize(
+    percent = 100 * sum(estimate[variable != "B15003_001"]) / unique(summary_est),
+    .groups = "drop"
+  ) |>
+  ggplot(aes(x = reorder(NAME, percent), y = percent, fill = percent)) +
+  geom_col() +
+  coord_flip() +
+  scale_y_continuous(labels = scales::label_percent(scale = 1)) +
+  scale_fill_viridis_c(option = "C", guide = "none") +
+  labs(
+    title = "Adults with a bachelor's degree or higher by state-level geography (2020)",
+    x = NULL,
+    y = "Share of adults 25 and over",
+    caption = "Source: ACS 5-year estimates via tidycensus"
+  ) +
+  theme_minimal()
+```
